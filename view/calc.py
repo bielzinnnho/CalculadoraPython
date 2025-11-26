@@ -21,15 +21,19 @@ class CalcUI(QMainWindow):
         self.btn_8.clicked.connect(lambda: self.addNumber(8))
         self.btn_9.clicked.connect(lambda: self.addNumber(9))
         self.btn_0.clicked.connect(lambda: self.addNumber(0))
-        self.btn_mais.clicked.connect(lambda: self.addNumber("+"))
-        self.btn_menos.clicked.connect(lambda: self.addNumber("-"))
-        self.btn_divi.clicked.connect(lambda: self.addNumber("÷"))
-        self.btn_vezes.clicked.connect(lambda: self.addNumber("x"))
+        # self.btn_mais.clicked.connect(lambda: self.addNumber("+"))
+        # self.btn_menos.clicked.connect(lambda: self.addNumber("-"))
+        # self.btn_divi.clicked.connect(lambda: self.addNumber("÷"))
+        # self.btn_vezes.clicked.connect(lambda: self.addNumber("x"))
         self.btn_virg.clicked.connect(self.virg)
         self.btn_porcen.clicked.connect(lambda: self.addNumber("%"))
         self.btn_clear.clicked.connect(self.cleanDisplay)
         self.btn_igual.clicked.connect(self.showResult)
         self.btn_apagar.clicked.connect(self.apagarDisplay)
+        self.btn_mais.clicked.connect(self.setOperation)
+        self.btn_menos.clicked.connect(self.setOperation)
+        self.btn_divi.clicked.connect(self.setOperation)
+        self.btn_vezes.clicked.connect(self.setOperation)
 
 
     def addNumber(self, numero):
@@ -44,19 +48,17 @@ class CalcUI(QMainWindow):
 
     def apagarDisplay(self):
         last = self.display.text()
-        self.display.setText(last[:-1])
+        last = last[:-1]
+        if len(last) == 0:
+            last = "0"
+        self.display.setText(last)
 
-    def showResult(self):
-        num1 = self.display.text()
-        if "," in num1:
-            num1 = num1.repalce(",", ".")
-            num1 = float(num1)
-        else:
-            num1 = int(num1)
+    def setOperation(self):
+        result = self.display.text()
+        self.display2.setText(result)
+        self.cleanDisplay()
+        
 
-        num2 = 2    
-        result = soma(num1, num2)
-        print(f"Número: {result}")
 
     def virg(self):
         last = self.display.text()
@@ -65,3 +67,28 @@ class CalcUI(QMainWindow):
         result = last + ","
         self.display.setText(result) 
     
+    def getNumberDisplay(self, display):
+        num = display.text()
+        if "," in num:
+            num = num.replace(",", ".")
+            num = float(num)
+        else:
+            num = int(num)
+        return num
+    
+    def setNumberDisplay(self, num):
+        num = str(num)
+        num = num.replace("." , ",")
+        self.display.setText(num)
+
+    def setCalcDisplay(self, num1, num2, operation):
+        num1 = str(num1).replace(".", ",")
+        num2 = str(num2).replace(".", ",")
+        result = f"{num1} {operation} {num2} = "
+        self.display2.setText(result)
+
+    def showResult(self):
+        num1 = self.getNumberDisplay(self.display)
+        num2 = self.getNumberDisplay(self.display2)
+        result = soma(num1, num2)
+        self.setNumberDisplay(result)
