@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QShortcut
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QKeySequence
+from funcoes import soma
 
 class CalcUI(QMainWindow): 
 
@@ -21,13 +22,13 @@ class CalcUI(QMainWindow):
         self.btn_9.clicked.connect(lambda: self.addNumber(9))
         self.btn_0.clicked.connect(lambda: self.addNumber(0))
         self.btn_mais.clicked.connect(lambda: self.addNumber("+"))
-        self.btn_igual.clicked.connect(lambda: self.addNumber("="))
         self.btn_menos.clicked.connect(lambda: self.addNumber("-"))
         self.btn_divi.clicked.connect(lambda: self.addNumber("÷"))
         self.btn_vezes.clicked.connect(lambda: self.addNumber("x"))
-        self.btn_virg.clicked.connect(lambda: self.addNumber(","))
+        self.btn_virg.clicked.connect(self.virg)
         self.btn_porcen.clicked.connect(lambda: self.addNumber("%"))
         self.btn_clear.clicked.connect(self.cleanDisplay)
+        self.btn_igual.clicked.connect(self.showResult)
         self.btn_apagar.clicked.connect(self.apagarDisplay)
 
 
@@ -44,3 +45,23 @@ class CalcUI(QMainWindow):
     def apagarDisplay(self):
         last = self.display.text()
         self.display.setText(last[:-1])
+
+    def showResult(self):
+        num1 = self.display.text()
+        if "," in num1:
+            num1 = num1.repalce(",", ".")
+            num1 = float(num1)
+        else:
+            num1 = int(num1)
+
+        num2 = 2    
+        result = soma(num1, num2)
+        print(f"Número: {result}")
+
+    def virg(self):
+        last = self.display.text()
+        if last.count(",") > 0:
+            result = last
+        result = last + ","
+        self.display.setText(result) 
+    
