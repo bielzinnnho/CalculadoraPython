@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QShortcut
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QKeySequence
-from funcoes import soma
+from funcoes import somar, subtrair, multiplicar, dividir, porcentagem
 
 class CalcUI(QMainWindow): 
 
@@ -10,7 +10,18 @@ class CalcUI(QMainWindow):
         loadUi("view/calculadora.ui", self)
         self.show()
 
-        # QShortcut(QKeySequence("0"), self).activated.connect(lambda: self.addNumber(0))
+        self.num1 = 0
+        self.num2 = 0
+
+        self.selectedOperation = None
+        
+        self.operationList = {
+            "+": somar,
+            "-": subtrair,
+            "x": multiplicar,
+            "÷": dividir,
+        }
+
         self.btn_1.clicked.connect(lambda: self.addNumber(1))
         self.btn_2.clicked.connect(lambda: self.addNumber(2))
         self.btn_3.clicked.connect(lambda: self.addNumber(3))
@@ -21,19 +32,16 @@ class CalcUI(QMainWindow):
         self.btn_8.clicked.connect(lambda: self.addNumber(8))
         self.btn_9.clicked.connect(lambda: self.addNumber(9))
         self.btn_0.clicked.connect(lambda: self.addNumber(0))
-        # self.btn_mais.clicked.connect(lambda: self.addNumber("+"))
-        # self.btn_menos.clicked.connect(lambda: self.addNumber("-"))
-        # self.btn_divi.clicked.connect(lambda: self.addNumber("÷"))
-        # self.btn_vezes.clicked.connect(lambda: self.addNumber("x"))
         self.btn_virg.clicked.connect(self.virg)
-        self.btn_porcen.clicked.connect(lambda: self.addNumber("%"))
         self.btn_clear.clicked.connect(self.cleanDisplay)
+        self.btn_invert.clicked.connect(self.invert)
         self.btn_igual.clicked.connect(self.showResult)
         self.btn_apagar.clicked.connect(self.apagarDisplay)
-        self.btn_mais.clicked.connect(self.setOperation)
-        self.btn_menos.clicked.connect(self.setOperation)
-        self.btn_divi.clicked.connect(self.setOperation)
-        self.btn_vezes.clicked.connect(self.setOperation)
+        self.btn_mais.clicked.connect(lambda: self.setOperation("+"))
+        self.btn_menos.clicked.connect(lambda: self.setOperation("-"))
+        self.btn_divi.clicked.connect(lambda: self.setOperation("÷"))
+        self.btn_vezes.clicked.connect(lambda: self.setOperation("x"))
+        self.btn_porcen.clicked.connect(self.percent)
 
 
     def addNumber(self, numero):
@@ -45,6 +53,8 @@ class CalcUI(QMainWindow):
     
     def cleanDisplay(self):
         self.display.setText("0")
+        if self.display.text() == "0":
+            self.display2.setText("0")
 
     def apagarDisplay(self):
         last = self.display.text()
@@ -53,10 +63,25 @@ class CalcUI(QMainWindow):
             last = "0"
         self.display.setText(last)
 
-    def setOperation(self):
+    def invert(self):
+        numero = int(self.display.text())
+        x = str(numero * -1)
+        self.display.setText(x)
+
+    def percent(self):
+        perc = self.getNumberDisplay(self.display)
+        result = porcentagem(self.num1, perc)
+        self.setNumberDisplay(result)
+
+    def setOperation(self, operation):
+        self.selectedOperation = operation
+        self.num1 = self.getNumberDisplay(self.display)
+        self.num2 = 0
         result = self.display.text()
         self.display2.setText(result)
-        self.cleanDisplay()
+        self.display.setText("0")
+        self.btn_clear.setText("AC")
+
         
     def virg(self):
         last = self.display.text()
@@ -86,7 +111,15 @@ class CalcUI(QMainWindow):
         self.display2.setText(result)
 
     def showResult(self):
-        num1 = self.getNumberDisplay(self.display)
-        num2 = self.getNumberDisplay(self.display2)
-        result = soma(num1, num2)
+        if self.num2 == 0:
+            self.num2 = self.getNumberDisplay(self.display)
+ 
+        num1 = self.num1
+        num2 = self.num2
+        operation = self.operationList.get(self.selectedOperation)
+        result = operation(num1, num2)
+        self.num1 = result
+ 
         self.setNumberDisplay(result)
+        self.setCalcDisplay(num1, num2, self.selectedOperation)
+ 

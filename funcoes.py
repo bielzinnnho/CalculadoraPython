@@ -1,18 +1,25 @@
-def soma(num1, num2): 
+def somar(num1, num2): 
     result = num1 + num2
     return result
 
-def sub(num1, num2): 
+def subtrair(num1, num2): 
     result = num1 - num2
     return result
 
-def multi(num1, num2): 
+def multiplicar(num1, num2): 
     result = num1 * num2
     return result
 
-def divi(num1, num2):
+def dividir(num1, num2):
     if num2 == 0:
         print ("Não é possiel dividir por 0")
         return "Erro na divisão"
     result = num1 / num2
     return result
+
+def porcentagem(num1, perc):
+    result = num1 * (perc / 100)
+    return result
+    
+# 90 x 20 
+# resultado / 100 
