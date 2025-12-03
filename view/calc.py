@@ -58,8 +58,6 @@ class CalcUI(QMainWindow):
         self.display2.setText(result)
         self.cleanDisplay()
         
-
-
     def virg(self):
         last = self.display.text()
         if last.count(",") > 0:
