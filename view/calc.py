@@ -1,17 +1,25 @@
 from PyQt5.QtWidgets import QMainWindow, QShortcut
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import QTimer
 from funcoes import somar, subtrair, multiplicar, dividir, porcentagem
+from os import path
+import sys
+
+def loadFile(file):
+    base_path = getattr(sys, "_MEIPASS", path.dirname(path.abspath(__file__)))
+    return path.join(base_path, file)
 
 class CalcUI(QMainWindow): 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        loadUi("view/calculadora.ui", self)
+        loadUi(loadFile("view/calculadora.ui"), self)
         self.show()
 
         self.num1 = 0
         self.num2 = 0
+        self.finish = False
 
         self.selectedOperation = None
         
@@ -43,10 +51,43 @@ class CalcUI(QMainWindow):
         self.btn_vezes.clicked.connect(lambda: self.setOperation("x"))
         self.btn_porcen.clicked.connect(self.percent)
 
+    def timerClean(self):
+
+        self.btn_virg.setEnabled(False)
+        self.btn_clear.setEnabled(False)
+        self.btn_invert.setEnabled(False)
+        self.btn_igual.setEnabled(False)
+        self.btn_apagar.setEnabled(False)
+        self.btn_mais.setEnabled(False)
+        self.btn_menos.setEnabled(False)
+        self.btn_divi.setEnabled(False)
+        self.btn_vezes.setEnabled(False)
+        self.btn_porcen.setEnabled(False)
+
+        self.timer = QTimer(self)
+        self.timer.singleShot(1000, self.timeOutClean)
+
+    def timeOutClean(self):
+        self.btn_virg.setEnabled(True)
+        self.btn_clear.setEnabled(True)
+        self.btn_invert.setEnabled(True)
+        self.btn_igual.setEnabled(True)
+        self.btn_apagar.setEnabled(True)
+        self.btn_mais.setEnabled(True)
+        self.btn_menos.setEnabled(True)
+        self.btn_divi.setEnabled(True)
+        self.btn_vezes.setEnabled(True)
+        self.btn_porcen.setEnabled(True)
+        self.display.setText("0")
+        self.display2.setText("0")
+        self.num1 = 0
+        self.num2 = 0
+        self.selectedOperation = None
 
     def addNumber(self, numero):
         last = self.display.text()
-        if last == "0":
+        if last == "0" or self.finish:
+            self.finish = False
             self.display.setText(f"{numero}")
         else:    
             self.display.setText(last + f"{numero}")
@@ -64,9 +105,9 @@ class CalcUI(QMainWindow):
         self.display.setText(last)
 
     def invert(self):
-        numero = int(self.display.text())
+        numero = self.getNumberDisplay(self.display)
         x = str(numero * -1)
-        self.display.setText(x)
+        self.setNumberDisplay(x)
 
     def percent(self):
         perc = self.getNumberDisplay(self.display)
@@ -83,12 +124,14 @@ class CalcUI(QMainWindow):
         self.btn_clear.setText("AC")
 
         
-    def virg(self):
-        last = self.display.text()
-        if last.count(",") > 0:
-            result = last
-        result = last + ","
-        self.display.setText(result) 
+    def virg(self):    
+        ultimo = self.display.text()
+        if "," in ultimo:
+            return
+        else:
+            result = ultimo + ","
+            self.display.setText(result)
+ 
     
     def getNumberDisplay(self, display):
         num = display.text()
@@ -111,15 +154,18 @@ class CalcUI(QMainWindow):
         self.display2.setText(result)
 
     def showResult(self):
-        if self.num2 == 0:
-            self.num2 = self.getNumberDisplay(self.display)
- 
-        num1 = self.num1
-        num2 = self.num2
-        operation = self.operationList.get(self.selectedOperation)
-        result = operation(num1, num2)
-        self.num1 = result
- 
-        self.setNumberDisplay(result)
-        self.setCalcDisplay(num1, num2, self.selectedOperation)
- 
+        if self.selectedOperation:
+            if self.num2 == 0:
+                self.num2 = self.getNumberDisplay(self.display)
+    
+            num1 = self.num1
+            num2 = self.num2
+            operation = self.operationList.get(self.selectedOperation)
+            result = operation(num1, num2)
+            self.num1 = result
+    
+            self.setNumberDisplay(result)
+            self.setCalcDisplay(num1, num2, self.selectedOperation)
+            self.finish = True
+            if isinstance(result, str):
+                self.timerClean()
